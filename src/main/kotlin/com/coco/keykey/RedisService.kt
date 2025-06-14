@@ -15,6 +15,7 @@ class RedisService(
     //todo hot key 문제
 
 
+    //GET말고 SET할 때만 RedisTTLUpdate 사용하자
     @RedisTTLUpdate
     fun get(key: String): String? {
         val redisValue = template.opsForValue().get(key)
