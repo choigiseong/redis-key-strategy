@@ -20,21 +20,14 @@ class RedisTTLUpdateAOP(
     )
     fun afterReturning(
         joinPoint: JoinPoint,
-        returnValue: Any?,
+        returnValue: Boolean?,
     ) {
-        val key = joinPoint.args[0] as String
+        if (returnValue !is Boolean || !returnValue) return
 
-        if (returnValue == null) {
-            return
-        }
+        val key = joinPoint.args.getOrNull(0)?.toString() ?: return
 
-        val remainingTTLSeconds = template.getExpire(key, TimeUnit.SECONDS)
-
-        if (remainingTTLSeconds == -1L || remainingTTLSeconds == -2L) {
-            return
-        }
-
-        if (remainingTTLSeconds <= TTL_RENEWAL_THRESHOLD_SECONDS) {
+        val ttl = template.getExpire(key, TimeUnit.SECONDS)
+        if (ttl <= TTL_RENEWAL_THRESHOLD_SECONDS) {
             template.expire(key, REDIS_DEFAULT_TTL, REDIS_DEFAULT_TIME_UNIT)
         }
     }
